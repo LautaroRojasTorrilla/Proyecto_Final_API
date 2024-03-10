@@ -1,5 +1,6 @@
 ﻿using Proyecto_Final_API.Database;
 using Proyecto_Final_API.DTO;
+using Proyecto_Final_API.Mapper;
 using Proyecto_Final_API.Models;
 
 namespace Proyecto_Final_API.Service
@@ -47,14 +48,7 @@ namespace Proyecto_Final_API.Service
         {
             try
             {
-                // puedo generar capa de mapper con automapper. 1:02
-                Producto p = new Producto();
-                p.Id = dto.Id;
-                p.Descripciones = dto.Descripciones;
-                p.Costo = dto.Costo;
-                p.PrecioVenta = dto.PrecioVenta;
-                p.Stock = dto.Stock;
-                p.IdUsuario = dto.IdUsuario;
+                Producto p =  ProductoMapper.MapearAProducto(dto);
 
                 this.context.Productos.Add(p);
                 context.SaveChanges();
@@ -75,6 +69,7 @@ namespace Proyecto_Final_API.Service
 
                 if (producto is not null)
                 {
+
                     producto.PrecioVenta = productoDTO.PrecioVenta;
                     producto.Stock = productoDTO.Stock;
                     producto.Descripciones = productoDTO.Descripciones;
