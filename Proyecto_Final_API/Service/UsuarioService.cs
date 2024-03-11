@@ -109,40 +109,46 @@ namespace Proyecto_Final_API.Service
             }
         }
 
-        public static bool ModificarUsuarioPorId(Usuario usuario, int id)
+        public bool ModificarUsuarioPorId(int id, UsuarioDTO usuarioDTO)
         {
-
-            using (CoderContext contexto = new CoderContext())
+            try
             {
-                Usuario? usuarioBuscado = contexto.Usuarios.Where(u => u.Id == id).FirstOrDefault();
+                Usuario usuario = ObtenerUsuarioporID(id);
 
-                usuarioBuscado.Nombre = usuario.Nombre;
-                usuarioBuscado.NombreUsuario = usuario.NombreUsuario;
-                usuarioBuscado.Apellido = usuario.Apellido;
-                usuarioBuscado.Mail = usuario.Mail;
-
-                contexto.Usuarios.Update(usuarioBuscado);
-
-                contexto.SaveChanges();
-
-                return true;
-            }
-        }
-
-        public static bool EliminarUsuarioPorID(int id)
-        {
-            using (CoderContext contexto = new CoderContext())
-            {
-                Usuario? usuarioAEliminar = contexto.Usuarios.FirstOrDefault(u => u.Id == id);
-
-                if (usuarioAEliminar is not null)
+                if (usuario is not null)
                 {
-                    contexto.Usuarios.Remove(usuarioAEliminar);
-                    contexto.SaveChanges();
+                    if (!ValidarCorreo(usuarioDTO.Mail))
+                    {
+                        throw new ArgumentException("El formato del correo electrónico no es válido.");
+                    }
+
+                    if (UsuarioExiste(usuarioDTO.Mail))
+                    {
+                        throw new InvalidOperationException("El correo electrónico ya está registrado por otro usuario.");
+                    }
+
+                    usuario.Nombre = usuarioDTO.Nombre;
+                    usuario.Apellido = usuarioDTO.Apellido;
+                    usuario.NombreUsuario = usuarioDTO.NombreUsuario;
+                    usuario.Contraseña = usuarioDTO.Contraseña;
+                    usuario.Mail = usuarioDTO.Mail;
+
+                    this.context.Usuarios.Update(usuario);
+                    this.context.SaveChanges();
+
                     return true;
                 }
                 return false;
             }
+            catch (DbUpdateException ex)
+            {
+                throw new Exception($"Error al modificar el usuario: {ex.Message}", ex);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message, ex);
+            }
         }
+
     }
 }

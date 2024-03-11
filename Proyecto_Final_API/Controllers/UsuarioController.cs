@@ -84,5 +84,26 @@ namespace Proyecto_Final_API.Controllers
                 return StatusCode(500, new { mensaje = "Error al procesar la solicitud", detalle = ex.Message });
             }
         }
+
+        [HttpPut("{id}")]
+        public IActionResult ModificarUsuario(int id, UsuarioDTO usuario)
+        {
+            try
+            {
+                if (id >= 1)
+                {
+                    if (this.usuarioService.ModificarUsuarioPorId(id, usuario))
+                    {
+                        return Ok(new { mensaje = "Usuario actualizado", status = 200, usuario });
+                    }
+                    return Conflict(new { mensaje = "No se pudo actualizar el usuario" });
+                }
+                return BadRequest(new { status = 400, mensaje = "El ID no puede ser menor a 1" });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { mensaje = "Error al procesar la solicitud", detalle = ex.Message });
+            }
+        }
     }
 }
