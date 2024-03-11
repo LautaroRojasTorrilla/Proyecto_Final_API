@@ -82,7 +82,6 @@ namespace Proyecto_Final_API.Controllers
 
 
         [HttpDelete("{id}")]
-
         public IActionResult BorrarProducto(int id)
         {
             try

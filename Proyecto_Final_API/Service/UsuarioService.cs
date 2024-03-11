@@ -150,5 +150,25 @@ namespace Proyecto_Final_API.Service
             }
         }
 
+        public bool EliminarUsuarioPorID(int id)
+        {
+            try
+            {
+                Usuario usuario = ObtenerUsuarioporID(id);
+
+                if (usuario is not null)
+                {
+                    this.context.Remove(usuario);
+                    this.context.SaveChanges();
+                    return true;
+                }
+                return false;
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"Error al eliminar el producto: {ex.Message}", ex);
+            }
+        }
+
     }
 }

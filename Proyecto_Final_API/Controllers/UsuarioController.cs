@@ -17,6 +17,33 @@ namespace Proyecto_Final_API.Controllers
             this.usuarioService = usuarioService;
         }
 
+        [HttpGet("{id}")]
+        public IActionResult ObtenerUsuario(int id)
+        {
+            try
+            {
+                if (id < 1)
+                {
+                    return BadRequest(new { mensaje = "El ID del usuario debe ser mayor o igual a 1", status = 400 });
+                }
+
+                Usuario usuario = this.usuarioService.ObtenerUsuarioporID(id);
+
+                if (usuario != null)
+                {
+                    return Ok(new { mensaje = "Usuario encontrado", status = 200, usuario });
+                }
+                else
+                {
+                    return NotFound(new { mensaje = "No se encontró el usuario", status = 404 });
+                }
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Error al procesar la solicitud: {ex.Message}");
+            }
+        }
+
         [HttpGet("listado")]
         public IActionResult ObtenerListadoDeUsuarios()
         {
@@ -103,6 +130,30 @@ namespace Proyecto_Final_API.Controllers
             catch (Exception ex)
             {
                 return StatusCode(500, new { mensaje = "Error al procesar la solicitud", detalle = ex.Message });
+            }
+        }
+
+        [HttpDelete("{id}")]
+        public IActionResult BorrarUsuario(int id)
+        {
+            try
+            {
+                if (id > 0)
+                {
+                    bool usuarioEliminado = this.usuarioService.EliminarUsuarioPorID(id);
+
+                    if (usuarioEliminado)
+                    {
+                        return Ok(new { mensaje = "Usuario eliminado", status = 200 });
+                    }
+
+                }
+
+                return BadRequest(new { status = 400, mensaje = "El ID no puede ser menor o igual a 0" });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { mensaje = "Error al procesar la solicitud.", detalle = ex.Message });
             }
         }
     }
