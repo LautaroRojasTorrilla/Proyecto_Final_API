@@ -3,7 +3,7 @@ using Proyecto_Final_API.Models;
 
 namespace Proyecto_Final_API.Mapper
 {
-    public static class UsuarioMappercs
+    public static class UsuarioMapper
     {
         public static Usuario MapearAProducto(UsuarioDTO dto)
         {

@@ -60,7 +60,6 @@ namespace Proyecto_Final_API.Controllers
         }
 
         [HttpPut("{id}")]
-
         public IActionResult ModificarProducto(int id, ProductoDTO producto)
         {
             try
@@ -97,7 +96,6 @@ namespace Proyecto_Final_API.Controllers
                         return Ok(new { mensaje = "Producto eliminado", status = 200 });
                     }
 
-                    return Conflict(new { mensaje = "No se pudo borrar el producto. El producto no existe.", status = 409 });
                 }
 
                 return BadRequest(new { status = 400, mensaje = "El ID no puede ser menor o igual a 0" });
