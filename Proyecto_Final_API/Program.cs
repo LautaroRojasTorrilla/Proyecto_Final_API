@@ -18,6 +18,7 @@ namespace Proyecto_Final_API
             builder.Services.AddSwaggerGen();
             builder.Services.AddScoped<UsuarioService>();
             builder.Services.AddScoped<ProductoService>();
+            builder.Services.AddScoped<ProductoVendidoService>();
 
             //inyecto la conexión con la base de datos
             builder.Services.AddDbContext<CoderContext>(options =>

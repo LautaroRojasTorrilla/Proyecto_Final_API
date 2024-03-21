@@ -7,7 +7,7 @@ namespace Proyecto_Final_API.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-
+     
     public class UsuarioController : Controller
     {
         private UsuarioService usuarioService;
