@@ -19,6 +19,8 @@ namespace Proyecto_Final_API
             builder.Services.AddScoped<UsuarioService>();
             builder.Services.AddScoped<ProductoService>();
             builder.Services.AddScoped<ProductoVendidoService>();
+            builder.Services.AddScoped<VentaService>();
+
 
             //inyecto la conexión con la base de datos
             builder.Services.AddDbContext<CoderContext>(options =>

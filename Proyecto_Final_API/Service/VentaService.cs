@@ -1,38 +1,47 @@
-﻿using Proyecto_Final_API.Database;
+﻿using Microsoft.EntityFrameworkCore.ChangeTracking;
+using Microsoft.EntityFrameworkCore.Metadata.Conventions;
+using Proyecto_Final_API.Database;
+using Proyecto_Final_API.DTO;
 using Proyecto_Final_API.Models;
+using System.Runtime.CompilerServices;
 
 namespace Proyecto_Final_API.Service
 {
     public class VentaService
     {
-        public static List<Venta> ObtenerTodasLasVentas()
+        private CoderContext context;
+        private ProductoVendidoService productoVendidoService;
+        private ProductoService productoService;
+
+        public VentaService(CoderContext coderContext, ProductoVendidoService productoVendidoService,
+            ProductoService productoService)
+        {
+            this.context = coderContext;
+            this.productoVendidoService = productoVendidoService;
+            this.productoService = productoService;
+        }
+
+        public List<Venta> ObtenerTodasLosVentas()
         {
             try
             {
-                using (CoderContext contexto = new CoderContext())
-                {
-                    List<Venta> ventas = contexto.Venta.ToList();
-                    return ventas;
-                }
+                return this.context.Venta.ToList();
             }
             catch (Exception ex)
             {
-                // Lanzar una nueva excepción para manejar el error en un nivel superior.
                 throw new Exception($"Error al obtener todas las ventas: {ex.Message}", ex);
             }
         }
 
-        public static Venta ObtenerVentaPorId(int id)
+        public Venta ObtenerVentaPorId(int id)
         {
             try
             {
-                using (CoderContext contexto = new CoderContext())
-                {
-                    Venta ventaBuscada = contexto.Venta.FirstOrDefault(v => v.Id == id)
-                        ?? throw new Exception($"No se encontró una venta con ID {id}");
+                Venta? ventaBuscada = context.Venta.FirstOrDefault(v => v.Id == id)
+                    ?? throw new Exception($"No se encontró una venta con ID {id}");
 
-                    return ventaBuscada;
-                }
+                return ventaBuscada;
+
             }
             catch (Exception ex)
             {
@@ -40,16 +49,24 @@ namespace Proyecto_Final_API.Service
             }
         }
 
-        public static bool AgregarVenta(Venta venta)
+        public bool AgregarVenta(int idUsuario, List<ProductoDTO> productosDTO)
         {
             try
             {
-                using (CoderContext contexto = new CoderContext())
-                {
-                    contexto.Venta.Add(venta);
-                    contexto.SaveChanges();
-                    return true;
-                }
+                Venta venta = new Venta();
+
+                List<string> nombresProductos = productosDTO.Select(p => p.Descripciones).ToList();
+                string comentarios = string.Join("-", nombresProductos);
+                venta.Comentarios = comentarios;
+                venta.IdUsuario = idUsuario;
+
+                EntityEntry<Venta>? resultado = context.Venta.Add(venta);
+                resultado.State = Microsoft.EntityFrameworkCore.EntityState.Added;
+                context.SaveChanges();
+
+                RegistrarProductosComoVendidos(productosDTO, venta.Id);
+                ActualizarStock(productosDTO);
+                return true;
             }
             catch (Exception ex)
             {
@@ -57,50 +74,32 @@ namespace Proyecto_Final_API.Service
             }
         }
 
-        public static bool ModificarVente(Venta venta, int id)
+        private void RegistrarProductosComoVendidos(List<ProductoDTO> productosDTO, int idVenta)
         {
-            try
+            productosDTO.ForEach(p =>
             {
-                using (CoderContext contexto = new CoderContext())
-                {
-                    Venta ventaBuscada = contexto.Venta.FirstOrDefault(v => v.Id == id)
-                        ?? throw new Exception($"No se encontró la venta con ID {id}");
+                ProductoVendidoDTO productoVendidoDTO = new ProductoVendidoDTO();
+                productoVendidoDTO.IdProducto = p.Id;
+                productoVendidoDTO.IdVenta = idVenta;
+                productoVendidoDTO.Stock = p.Stock;
 
-                    ventaBuscada.Comentarios = venta.Comentarios;
-
-                    contexto.Venta.Update(ventaBuscada);
-
-                    contexto.SaveChanges();
-
-                    return true;
-                }
-            }
-            catch (Exception ex)
-            {
-
-                throw;
-            }
+                productoVendidoService.AgregarProductoVendido(productoVendidoDTO);
+            });
         }
 
-        public static bool EliminarVentaPorID(int Id)
+        private void ActualizarStock(List<ProductoDTO> productosDTO)
         {
-            try
+            productosDTO.ForEach(productoDTO =>
             {
-                using (CoderContext contexto = new CoderContext())
+                Producto? producto = this.context.Productos.FirstOrDefault(p => p.Id == productoDTO.Id);
+
+                if (producto != null)
                 {
-                    Venta ventaAEliminar = contexto.Venta.FirstOrDefault(v => v.Id == Id)
-                        ?? throw new Exception($"No se encontró una venta con ID {Id}");
+                    producto.Stock -= productoDTO.Stock;
 
-                    contexto.Venta.Remove(ventaAEliminar);
-                    contexto.SaveChanges();
-
-                    return true;
+                    this.context.SaveChanges();
                 }
-            }
-            catch (Exception ex)
-            {
-                throw new Exception($"Error al eliminar la venta: {ex.Message}", ex);
-            }
+            });
         }
     }
 }
